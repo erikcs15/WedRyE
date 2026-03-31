@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rubí y Erik — 29 de febrero, 2027</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #faf7f2;
+      --warm-white: #f5f0e8;
+      --ink: #1a1614;
+      --muted: #8a7f75;
+      --gold: #b89a6a;
+      --gold-light: #d4b896;
+      --border: #e0d5c5;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: 'Jost', sans-serif;
+      font-weight: 200;
+      letter-spacing: 0.03em;
+      overflow-x: hidden;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4rem 2rem;
+      position: relative;
+      background: var(--cream);
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 50% 30%, rgba(184,154,106,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(184,154,106,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .ornament {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.8rem;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeUp 1s ease 0.2s forwards;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.5rem auto;
+      width: 200px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--gold);
+      opacity: 0.5;
+    }
+    .divider-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--gold);
+    }
+
+    .names {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: clamp(4rem, 12vw, 9rem);
+      line-height: 0.9;
+      letter-spacing: -0.01em;
+      opacity: 0;
+      animation: fadeUp 1.2s ease 0.4s forwards;
+    }
+    .names em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .amp {
+      display: block;
+      font-size: 0.5em;
+      color: var(--muted);
+      margin: 0.1em 0;
+    }
+
+    .date-hero {
+      font-family: 'Jost', sans-serif;
+      font-weight: 300;
+      font-size: 0.85rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 2.5rem;
+      opacity: 0;
+      animation: fadeUp 1s ease 0.8s forwards;
+    }
+
+    .scroll-cta {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0;
+      animation: fadeUp 1s ease 1.2s forwards;
+    }
+    .scroll-cta span {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .scroll-line {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+
+    /* ── SECTIONS ── */
+    section {
+      padding: 6rem 2rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: clamp(2rem, 5vw, 3rem);
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+    }
+    .section-title em { font-style: italic; color: var(--gold); }
+
+    .body-text {
+      font-size: 0.95rem;
+      line-height: 1.9;
+      color: var(--muted);
+    }
+
+    /* ── CARDS ── */
+    .info-grid {
+      display: grid;
+      gap: 1.5px;
+      background: var(--border);
+      border: 1.5px solid var(--border);
+      margin-top: 3rem;
+    }
+
+    .info-card {
+      background: var(--cream);
+      padding: 2.5rem 2rem;
+      position: relative;
+    }
+    .info-card-icon {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+    .info-card-title {
+      font-size: 0.65rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.75rem;
+    }
+    .info-card-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 300;
+      line-height: 1.3;
+      margin-bottom: 0.5rem;
+    }
+    .info-card-sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── MAP ── */
+    .map-container {
+      margin-top: 3rem;
+      border: 1.5px solid var(--border);
+      overflow: hidden;
+      position: relative;
+    }
+    .map-container iframe {
+      width: 100%;
+      height: 320px;
+      border: none;
+      display: block;
+      filter: grayscale(0.3) sepia(0.1);
+    }
+    .map-link {
+      display: block;
+      padding: 1rem 1.5rem;
+      background: var(--warm-white);
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-decoration: none;
+      text-align: center;
+      transition: background 0.2s;
+    }
+    .map-link:hover { background: var(--border); }
+
+    /* ── DRESS CODE ── */
+    .dress-card {
+      margin-top: 3rem;
+      border: 1.5px solid var(--border);
+      padding: 2.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 480px) {
+      .dress-card { grid-template-columns: 1fr; }
+    }
+
+    .dress-item-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .dress-item-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 300;
+    }
+    .dress-palette {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    .color-swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+    .color-swatch[title]:hover::after {
+      content: attr(title);
+      position: absolute;
+      bottom: 135%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: var(--cream);
+      font-size: 0.6rem;
+      padding: 3px 8px;
+      white-space: nowrap;
+      letter-spacing: 0.1em;
+    }
+    .dress-note {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.7;
+      grid-column: 1 / -1;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 5rem 2rem 4rem;
+      border-top: 1px solid var(--border);
+    }
+    .footer-names {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 2rem;
+      font-weight: 300;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+    .footer-date {
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── ADMIN PANEL ── */
+    #admin-toggle {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: var(--ink);
+      color: var(--cream);
+      border: none;
+      padding: 0.6rem 1.2rem;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      z-index: 100;
+      transition: background 0.2s;
+    }
+    #admin-toggle:hover { background: var(--gold); color: var(--ink); }
+
+    .admin-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(26,22,20,0.7);
+      z-index: 200;
+      backdrop-filter: blur(4px);
+    }
+    .admin-overlay.open { display: flex; align-items: center; justify-content: center; padding: 1rem; }
+
+    .admin-panel {
+      background: var(--cream);
+      border: 1.5px solid var(--border);
+      width: 100%;
+      max-width: 580px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 2.5rem;
+      position: relative;
+    }
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .admin-header h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: 1.5rem;
+    }
+    .admin-close {
+      background: none;
+      border: 1px solid var(--border);
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      font-size: 1rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .admin-close:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* Login */
+    .login-form { display: flex; flex-direction: column; gap: 1rem; }
+    .login-form input {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      padding: 0.8rem 1rem;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .login-form input:focus { border-color: var(--gold); }
+    .btn {
+      background: var(--ink);
+      color: var(--cream);
+      border: none;
+      padding: 0.85rem 1.5rem;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: var(--gold); color: var(--ink); }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-outline:hover { border-color: var(--ink); color: var(--ink); background: transparent; }
+    .btn-danger { background: #8b2020; }
+    .btn-danger:hover { background: #6b1818; color: var(--cream); }
+    .error-msg { font-size: 0.75rem; color: #8b2020; letter-spacing: 0.05em; }
+
+    /* Admin content */
+    .admin-content { display: none; }
+    .admin-content.visible { display: block; }
+
+    .admin-section { margin-bottom: 2rem; }
+    .admin-section-title {
+      font-size: 0.65rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .stat-box {
+      background: var(--cream);
+      padding: 1rem;
+      text-align: center;
+    }
+    .stat-number {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 300;
+      line-height: 1;
+    }
+    .stat-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-top: 0.25rem; }
+
+    .guest-add-form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .guest-add-form input {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      padding: 0.65rem 0.9rem;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.85rem;
+      color: var(--ink);
+      outline: none;
+    }
+    .guest-add-form input:focus { border-color: var(--gold); }
+
+    .guest-list { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
+    .guest-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+    }
+    .guest-item-name { font-size: 0.85rem; }
+    .guest-controls { display: flex; align-items: center; gap: 0.5rem; }
+    .status-badge {
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border: 1px solid;
+    }
+    .status-badge.confirmado { border-color: #4a7c4a; color: #4a7c4a; background: #f0f7f0; }
+    .status-badge.pendiente { border-color: var(--gold); color: var(--gold-light); background: #faf7f0; }
+    .status-badge.declinado { border-color: #8b2020; color: #8b2020; background: #fdf0f0; }
+
+    select.status-select {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      padding: 0.2rem 0.4rem;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.7rem;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .guest-remove {
+      background: none;
+      border: 1px solid var(--border);
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .guest-remove:hover { border-color: #8b2020; color: #8b2020; }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      border: 1px dashed var(--border);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 1; transform: scaleY(1); }
+      50%       { opacity: 0.4; transform: scaleY(0.7); }
+    }
+
+    /* Intersection observer fade */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════ HERO ══════ -->
+<div class="hero">
+  <p class="ornament">Con mucha alegría</p>
+  <div class="divider"><div class="divider-dot"></div></div>
+  <h1 class="names">
+    <em>Ana</em>
+    <span class="amp">&amp;</span>
+    <em>Carlos</em>
+  </h1>
+  <div class="divider" style="opacity:0;animation:fadeUp 1s ease 0.6s forwards;"><div class="divider-dot"></div></div>
+  <p class="date-hero">14 de Junio · 2026 · Ciudad de México</p>
+  <div class="scroll-cta">
+    <span>Ver detalles</span>
+    <div class="scroll-line"></div>
+  </div>
+</div>
+
+<!-- ══════ FECHA & HORA ══════ -->
+<section class="reveal" id="fecha">
+  <p class="section-label">Cuándo</p>
+  <h2 class="section-title">La <em>fecha</em> especial</h2>
+  <p class="body-text">Nos encantaría compartir este momento tan importante con ustedes. Su presencia es el mejor regalo que podríamos pedir.</p>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <span class="info-card-icon">🕐</span>
+      <p class="info-card-title">Ceremonia</p>
+      <p class="info-card-value">5:00 pm</p>
+      <p class="info-card-sub">Favor de llegar 30 min antes<br>Puertas abren 4:30 pm</p>
+    </div>
+    <div class="info-card">
+      <span class="info-card-icon">🥂</span>
+      <p class="info-card-title">Recepción</p>
+      <p class="info-card-value">7:00 pm</p>
+      <p class="info-card-sub">Cena, brindis y baile<br>Celebración hasta las 2:00 am</p>
+    </div>
+    <div class="info-card">
+      <span class="info-card-icon">📅</span>
+      <p class="info-card-title">Fecha</p>
+      <p class="info-card-value">14 · 06 · 2026</p>
+      <p class="info-card-sub">Domingo · Verano</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ UBICACIÓN ══════ -->
+<section class="reveal" id="ubicacion">
+  <p class="section-label">Dónde</p>
+  <h2 class="section-title">El <em>lugar</em></h2>
+  <p class="body-text">La ceremonia y recepción se llevarán a cabo en el mismo recinto, un espacio lleno de encanto y elegancia.</p>
+
+  <div class="info-grid" style="margin-bottom:0">
+    <div class="info-card">
+      <span class="info-card-icon">🏛️</span>
+      <p class="info-card-title">Recinto</p>
+      <p class="info-card-value">Jardín San Ángel</p>
+      <p class="info-card-sub">Av. Revolución 1325, San Ángel<br>Ciudad de México, CP 01000</p>
+    </div>
+  </div>
+
+  <div class="map-container">
+    <iframe
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3764.4!2d-99.1897!3d19.3437!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85d1ff1b1b1b1b1b%3A0x0!2sAv.+Revoluci%C3%B3n+1325%2C+San+%C3%81ngel%2C+CDMX!5e0!3m2!1ses!2smx!4v1234567890"
+      allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
+    <a href="https://maps.google.com/?q=Av.+Revolución+1325,+San+Ángel,+CDMX" target="_blank" class="map-link">
+      ↗ Abrir en Google Maps
+    </a>
+  </div>
+</section>
+
+<!-- ══════ CÓDIGO DE VESTIMENTA ══════ -->
+<section class="reveal" id="vestimenta">
+  <p class="section-label">Cómo vestir</p>
+  <h2 class="section-title">Código de <em>vestimenta</em></h2>
+  <p class="body-text">Queremos que estén cómodos y luciendo increíbles. Les pedimos seguir el código de vestimenta para que la estética del evento sea armoniosa.</p>
+
+  <div class="dress-card">
+    <div>
+      <p class="dress-item-label">Código</p>
+      <p class="dress-item-value">Formal elegante</p>
+    </div>
+    <div>
+      <p class="dress-item-label">Paleta sugerida</p>
+      <div class="dress-palette">
+        <div class="color-swatch" style="background:#d4c5a9" title="Arena"></div>
+        <div class="color-swatch" style="background:#c8bfb5" title="Gris perla"></div>
+        <div class="color-swatch" style="background:#8fada0" title="Verde salvia"></div>
+        <div class="color-swatch" style="background:#b8a89a" title="Malva"></div>
+        <div class="color-swatch" style="background:#2c3e50" title="Azul marino"></div>
+        <div class="color-swatch" style="background:#1a1614" title="Negro"></div>
+      </div>
+    </div>
+    <div class="dress-note">
+      <strong style="font-weight:300;letter-spacing:0.05em">Evitar:</strong> Blanco, marfil y crema (reservados para la novia). Tacones altos si la recepción es en jardín.
+      <br><br>
+      <strong style="font-weight:300;letter-spacing:0.05em">Para ellas:</strong> Vestido de cóctel o largo · Para ellos: Traje oscuro con corbata o moño.
+    </div>
+  </div>
+</section>
+
+<!-- ══════ FOOTER ══════ -->
+<footer>
+  <div class="divider" style="width:120px;margin:0 auto 2rem;"><div class="divider-dot"></div></div>
+  <p class="footer-names">Ana &amp; Carlos</p>
+  <p class="footer-date">14 · 06 · 2026 · Ciudad de México</p>
+  <p style="margin-top:1.5rem;font-size:0.7rem;color:var(--muted);letter-spacing:0.1em">Con amor, los esperamos 🤍</p>
+</footer>
+
+<!-- ══════ ADMIN BUTTON ══════ -->
+<button id="admin-toggle">⚙ Administrar</button>
+
+<!-- ══════ ADMIN OVERLAY ══════ -->
+<div class="admin-overlay" id="admin-overlay">
+  <div class="admin-panel">
+    <div class="admin-header">
+      <h2>Panel privado</h2>
+      <button class="admin-close" id="admin-close">✕</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="login-section">
+      <p style="font-size:0.8rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6">
+        Acceso exclusivo para los novios. Ingresa tu usuario y contraseña.
+      </p>
+      <div class="login-form">
+        <input type="text" id="login-user" placeholder="Usuario (ej: novia / novio)" autocomplete="off" />
+        <input type="password" id="login-pass" placeholder="Contraseña" autocomplete="off" />
+        <p class="error-msg" id="login-error" style="display:none">Usuario o contraseña incorrectos.</p>
+        <button class="btn" id="login-btn">Ingresar</button>
+      </div>
+      <p style="font-size:0.7rem;color:var(--muted);margin-top:1.5rem;letter-spacing:0.05em">
+        Credenciales de ejemplo — <em>usuario:</em> novia · <em>contraseña:</em> boda2026
+      </p>
+    </div>
+
+    <!-- ADMIN CONTENT -->
+    <div class="admin-content" id="admin-content">
+
+      <!-- Stats -->
+      <div class="admin-section">
+        <p class="admin-section-title">Resumen</p>
+        <div class="stats-row">
+          <div class="stat-box">
+            <div class="stat-number" id="stat-total">0</div>
+            <div class="stat-label">Total</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" id="stat-confirmed" style="color:#4a7c4a">0</div>
+            <div class="stat-label">Confirmados</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" id="stat-pending" style="color:var(--gold)">0</div>
+            <div class="stat-label">Pendientes</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add guest -->
+      <div class="admin-section">
+        <p class="admin-section-title">Agregar invitado</p>
+        <div class="guest-add-form">
+          <input type="text" id="guest-name-input" placeholder="Nombre completo" />
+          <button class="btn" id="add-guest-btn">+ Agregar</button>
+        </div>
+      </div>
+
+      <!-- Guest list -->
+      <div class="admin-section">
+        <p class="admin-section-title">Lista de invitados</p>
+        <ul class="guest-list" id="guest-list">
+          <!-- populated by JS -->
+        </ul>
+        <div class="empty-state" id="empty-state">Aún no hay invitados. ¡Agrega el primero!</div>
+      </div>
+
+      <button class="btn btn-outline" id="logout-btn" style="width:100%;margin-top:1rem">Cerrar sesión</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── REVEAL ON SCROLL ──
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => io.observe(el));
+
+  // ── ADMIN PANEL ──
+  const USERS = { novia: 'boda2026', novio: 'boda2026' };
+  let loggedIn = false;
+
+  const overlay   = document.getElementById('admin-overlay');
+  const loginSec  = document.getElementById('login-section');
+  const adminCont = document.getElementById('admin-content');
+  const loginErr  = document.getElementById('login-error');
+
+  document.getElementById('admin-toggle').addEventListener('click', () => {
+    overlay.classList.add('open');
+    if (loggedIn) showAdmin();
+  });
+  document.getElementById('admin-close').addEventListener('click', () => overlay.classList.remove('open'));
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+
+  document.getElementById('login-btn').addEventListener('click', () => {
+    const u = document.getElementById('login-user').value.trim().toLowerCase();
+    const p = document.getElementById('login-pass').value;
+    if (USERS[u] && USERS[u] === p) {
+      loggedIn = true;
+      loginErr.style.display = 'none';
+      showAdmin();
+    } else {
+      loginErr.style.display = 'block';
+    }
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    loggedIn = false;
+    loginSec.style.display = 'block';
+    adminCont.classList.remove('visible');
+    document.getElementById('login-user').value = '';
+    document.getElementById('login-pass').value = '';
+  });
+
+  function showAdmin() {
+    loginSec.style.display = 'none';
+    adminCont.classList.add('visible');
+    renderGuests();
+  }
+
+  // ── GUEST LIST ──
+  let guests = JSON.parse(sessionStorage.getItem('boda_guests') || '[]');
+
+  function saveGuests() { sessionStorage.setItem('boda_guests', JSON.stringify(guests)); }
+
+  function renderGuests() {
+    const list  = document.getElementById('guest-list');
+    const empty = document.getElementById('empty-state');
+    list.innerHTML = '';
+
+    const confirmed = guests.filter(g => g.status === 'confirmado').length;
+    const pending   = guests.filter(g => g.status === 'pendiente').length;
+    document.getElementById('stat-total').textContent     = guests.length;
+    document.getElementById('stat-confirmed').textContent = confirmed;
+    document.getElementById('stat-pending').textContent   = pending;
+
+    if (guests.length === 0) { empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+
+    guests.forEach((g, i) => {
+      const li = document.createElement('li');
+      li.className = 'guest-item';
+      li.innerHTML = `
+        <span class="guest-item-name">${g.name}</span>
+        <div class="guest-controls">
+          <span class="status-badge ${g.status}">${g.status}</span>
+          <select class="status-select" data-index="${i}">
+            <option value="pendiente"   ${g.status==='pendiente'   ? 'selected' : ''}>Pendiente</option>
+            <option value="confirmado"  ${g.status==='confirmado'  ? 'selected' : ''}>Confirmado</option>
+            <option value="declinado"   ${g.status==='declinado'   ? 'selected' : ''}>Declinado</option>
+          </select>
+          <button class="guest-remove" data-index="${i}">✕</button>
+        </div>
+      `;
+      list.appendChild(li);
+    });
+
+    list.querySelectorAll('.status-select').forEach(sel => {
+      sel.addEventListener('change', e => {
+        guests[+e.target.dataset.index].status = e.target.value;
+        saveGuests(); renderGuests();
+      });
+    });
+    list.querySelectorAll('.guest-remove').forEach(btn => {
+      btn.addEventListener('click', e => {
+        guests.splice(+e.target.dataset.index, 1);
+        saveGuests(); renderGuests();
+      });
+    });
+  }
+
+  document.getElementById('add-guest-btn').addEventListener('click', () => {
+    const input = document.getElementById('guest-name-input');
+    const name  = input.value.trim();
+    if (!name) return;
+    guests.push({ name, status: 'pendiente' });
+    saveGuests(); renderGuests();
+    input.value = '';
+    input.focus();
+  });
+  document.getElementById('guest-name-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('add-guest-btn').click();
+  });
+</script>
+</body>
+</html>
