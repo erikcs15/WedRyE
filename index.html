@@ -819,27 +819,56 @@
   </div>
 </div>
 
-<script>
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp }                          from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs,
+           addDoc, updateDoc, deleteDoc, doc }      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // ══════════════════════
+  // FIREBASE CONFIG
+  // ══════════════════════
+  const firebaseConfig = {
+    apiKey:            "AIzaSyDFTaWnOQTE5cFt6pV4_42Y7Msfn-K8qJA",
+    authDomain:        "miboda-a8a0f.firebaseapp.com",
+    projectId:         "miboda-a8a0f",
+    storageBucket:     "miboda-a8a0f.firebasestorage.app",
+    messagingSenderId: "539228903429",
+    appId:             "1:539228903429:web:d6071a7ccfcceb6061246c"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  const COL = collection(db, 'invitados');
+
   // ══════════════════════
   // ESTADO GLOBAL
   // ══════════════════════
-  const ADMINS   = { novia: 'mimimoze2026', novio: 'mimimoze2026' };
-  let guests     = JSON.parse(sessionStorage.getItem('boda_guests') || '[]');
-  let adminMode  = false;
+  const ADMINS  = { novia: 'mimimoze2026', novio: 'mimimoze2026' };
+  let guests    = [];
+  let adminMode = false;
 
-  const loginScreen  = document.getElementById('login-screen');
-  const weddingPage  = document.getElementById('wedding-page');
-  const adminPage    = document.getElementById('admin-page');
+  const loginScreen = document.getElementById('login-screen');
+  const weddingPage = document.getElementById('wedding-page');
+  const adminPage   = document.getElementById('admin-page');
+
+  // ══════════════════════
+  // CARGAR INVITADOS
+  // ══════════════════════
+  async function loadGuests() {
+    const snap = await getDocs(COL);
+    guests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
 
   // ══════════════════════
   // LOGIN LOGIC
   // ══════════════════════
-  const guestInput   = document.getElementById('guest-input');
-  const passInput    = document.getElementById('pass-input');
-  const passwordRow  = document.getElementById('password-row');
-  const loginError   = document.getElementById('login-error');
-  const notFoundMsg  = document.getElementById('not-found-msg');
-  const toggleBtn    = document.getElementById('toggle-admin-btn');
+  const guestInput  = document.getElementById('guest-input');
+  const passInput   = document.getElementById('pass-input');
+  const passwordRow = document.getElementById('password-row');
+  const loginError  = document.getElementById('login-error');
+  const notFoundMsg = document.getElementById('not-found-msg');
+  const toggleBtn   = document.getElementById('toggle-admin-btn');
 
   toggleBtn.addEventListener('click', () => {
     adminMode = !adminMode;
@@ -856,34 +885,45 @@
   guestInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
   passInput.addEventListener('keydown',  e => { if (e.key === 'Enter') handleLogin(); });
 
-  function handleLogin() {
+  async function handleLogin() {
     loginError.style.display  = 'none';
     notFoundMsg.style.display = 'none';
     const name = guestInput.value.trim();
     if (!name) return;
 
-    if (adminMode) {
-      // Acceso de novios
-      const pass = passInput.value;
-      const key  = name.toLowerCase();
-      if (ADMINS[key] && ADMINS[key] === pass) {
-        showAdmin();
+    const btn = document.getElementById('enter-btn');
+    btn.textContent = 'Verificando...';
+    btn.disabled = true;
+
+    try {
+      if (adminMode) {
+        const pass = passInput.value;
+        const key  = name.toLowerCase();
+        if (ADMINS[key] && ADMINS[key] === pass) {
+          await loadGuests();
+          showAdmin();
+        } else {
+          loginError.textContent   = 'Usuario o contraseña incorrectos.';
+          loginError.style.display = 'block';
+        }
       } else {
-        loginError.textContent    = 'Usuario o contraseña incorrectos.';
-        loginError.style.display  = 'block';
+        await loadGuests();
+        const found = guests.find(g => g.name.toLowerCase() === name.toLowerCase());
+        if (found) {
+          await updateDoc(doc(db, 'invitados', found.id), { status: 'confirmado' });
+          showWedding(found.name);
+        } else {
+          notFoundMsg.style.display = 'block';
+        }
       }
-    } else {
-      // Acceso de invitado — buscar nombre (sin distinguir mayúsculas)
-      const found = guests.find(g => g.name.toLowerCase() === name.toLowerCase());
-      if (found) {
-        showWedding(found.name);
-        // marcar como confirmado automáticamente
-        found.status = 'confirmado';
-        saveGuests();
-      } else {
-        notFoundMsg.style.display = 'block';
-      }
+    } catch(err) {
+      loginError.textContent   = 'Error de conexión. Intenta de nuevo.';
+      loginError.style.display = 'block';
+      console.error(err);
     }
+
+    btn.textContent = 'Ingresar';
+    btn.disabled = false;
   }
 
   function showWedding(name) {
@@ -928,8 +968,6 @@
   // ══════════════════════
   // ADMIN — GUESTS
   // ══════════════════════
-  function saveGuests() { sessionStorage.setItem('boda_guests', JSON.stringify(guests)); }
-
   function renderGuests() {
     const list  = document.getElementById('guest-list');
     const empty = document.getElementById('empty-state');
@@ -942,50 +980,63 @@
     if (guests.length === 0) { empty.style.display = 'block'; return; }
     empty.style.display = 'none';
 
-    guests.forEach((g, i) => {
+    guests.forEach((g) => {
       const li = document.createElement('li');
       li.className = 'guest-item';
       li.innerHTML = `
         <span class="guest-item-name">${g.name}</span>
         <div class="guest-controls">
           <span class="status-badge ${g.status}">${g.status}</span>
-          <select class="status-select" data-index="${i}">
+          <select class="status-select" data-id="${g.id}">
             <option value="pendiente"  ${g.status==='pendiente'  ? 'selected':''}>Pendiente</option>
             <option value="confirmado" ${g.status==='confirmado' ? 'selected':''}>Confirmado</option>
             <option value="declinado"  ${g.status==='declinado'  ? 'selected':''}>Declinado</option>
           </select>
-          <button class="guest-remove" data-index="${i}">✕</button>
+          <button class="guest-remove" data-id="${g.id}">✕</button>
         </div>
       `;
       list.appendChild(li);
     });
 
     list.querySelectorAll('.status-select').forEach(sel => {
-      sel.addEventListener('change', e => {
-        guests[+e.target.dataset.index].status = e.target.value;
-        saveGuests(); renderGuests();
+      sel.addEventListener('change', async e => {
+        const id     = e.target.dataset.id;
+        const status = e.target.value;
+        await updateDoc(doc(db, 'invitados', id), { status });
+        await loadGuests();
+        renderGuests();
       });
     });
+
     list.querySelectorAll('.guest-remove').forEach(btn => {
-      btn.addEventListener('click', e => {
-        guests.splice(+e.target.dataset.index, 1);
-        saveGuests(); renderGuests();
+      btn.addEventListener('click', async e => {
+        const id = e.target.closest('button').dataset.id;
+        await deleteDoc(doc(db, 'invitados', id));
+        await loadGuests();
+        renderGuests();
       });
     });
   }
 
-  document.getElementById('add-guest-btn').addEventListener('click', () => {
+  document.getElementById('add-guest-btn').addEventListener('click', async () => {
     const input = document.getElementById('guest-name-input');
     const name  = input.value.trim();
     if (!name) return;
     if (guests.find(g => g.name.toLowerCase() === name.toLowerCase())) {
       alert('Ese nombre ya está en la lista.'); return;
     }
-    guests.push({ name, status: 'pendiente' });
-    saveGuests(); renderGuests();
+    const btn = document.getElementById('add-guest-btn');
+    btn.textContent = '...';
+    btn.disabled = true;
+    await addDoc(COL, { name, status: 'pendiente' });
+    await loadGuests();
+    renderGuests();
     input.value = '';
     input.focus();
+    btn.textContent = '+ Agregar';
+    btn.disabled = false;
   });
+
   document.getElementById('guest-name-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('add-guest-btn').click();
   });
