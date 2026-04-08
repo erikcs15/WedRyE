@@ -111,6 +111,13 @@
       margin-bottom: 1.5rem;
     }
 
+    /* ── AUTOCOMPLETE WRAPPER ── */
+    .autocomplete-wrapper {
+      position: relative;
+      width: 100%;
+      margin-bottom: 0.75rem;
+    }
+
     .login-input {
       width: 100%;
       background: var(--warm-white);
@@ -125,10 +132,69 @@
       text-align: center;
       letter-spacing: 0.05em;
       transition: border-color 0.2s;
-      margin-bottom: 0.75rem;
     }
     .login-input:focus { border-color: var(--gold); }
     .login-input::placeholder { color: var(--muted); }
+
+    /* ── DROPDOWN ── */
+    .autocomplete-dropdown {
+      position: absolute;
+      top: calc(100% + 2px);
+      left: 0;
+      right: 0;
+      background: var(--warm-white);
+      border: 1px solid var(--gold);
+      border-top: none;
+      z-index: 100;
+      max-height: 220px;
+      overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(26,22,20,0.08);
+      display: none;
+    }
+    .autocomplete-dropdown.open { display: block; }
+
+    .autocomplete-dropdown::-webkit-scrollbar { width: 4px; }
+    .autocomplete-dropdown::-webkit-scrollbar-track { background: transparent; }
+    .autocomplete-dropdown::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .autocomplete-item {
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 300;
+      color: var(--ink);
+      cursor: pointer;
+      text-align: left;
+      letter-spacing: 0.03em;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s, color 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .autocomplete-item:last-child { border-bottom: none; }
+    .autocomplete-item:hover,
+    .autocomplete-item.active {
+      background: var(--cream);
+      color: var(--gold);
+    }
+    .autocomplete-item .item-icon {
+      font-size: 0.65rem;
+      opacity: 0.4;
+    }
+    .autocomplete-item mark {
+      background: none;
+      color: var(--gold);
+      font-weight: 400;
+    }
+
+    .autocomplete-no-results {
+      padding: 0.75rem 1rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: center;
+      letter-spacing: 0.05em;
+      font-style: italic;
+    }
 
     /* toggle password row */
     .password-row {
@@ -642,7 +708,14 @@
     <p class="login-date">29 · 02 · 2027 · Culiacán, Sinaloa</p>
 
     <p class="login-label">¿Cuál es tu nombre?</p>
-    <input class="login-input" type="text" id="guest-input" placeholder="Escribe tu nombre completo" autocomplete="off" />
+
+    <!-- AUTOCOMPLETE WRAPPER -->
+    <div class="autocomplete-wrapper" id="autocomplete-wrapper">
+      <input class="login-input" type="text" id="guest-input"
+             placeholder="Escribe tu nombre completo"
+             autocomplete="off" />
+      <div class="autocomplete-dropdown" id="autocomplete-dropdown"></div>
+    </div>
 
     <!-- Contraseña solo para novios -->
     <div class="password-row" id="password-row">
@@ -861,9 +934,113 @@
   }
 
   // ══════════════════════
+  // AUTOCOMPLETE
+  // ══════════════════════
+  const guestInput   = document.getElementById('guest-input');
+  const dropdown     = document.getElementById('autocomplete-dropdown');
+  const wrapper      = document.getElementById('autocomplete-wrapper');
+  let activeIndex    = -1;
+  let dropdownItems  = [];
+
+  // Precarga la lista en background al abrir la página
+  loadGuests().catch(() => {});
+
+  function escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function highlightMatch(name, query) {
+    if (!query) return name;
+    const re = new RegExp(`(${escapeRegex(query)})`, 'gi');
+    return name.replace(re, '<mark>$1</mark>');
+  }
+
+  function openDropdown(matches, query) {
+    dropdown.innerHTML = '';
+    activeIndex = -1;
+
+    if (matches.length === 0) {
+      dropdown.innerHTML = `<div class="autocomplete-no-results">No encontrado en la lista</div>`;
+      dropdown.classList.add('open');
+      dropdownItems = [];
+      return;
+    }
+
+    dropdownItems = matches;
+    matches.forEach((g, i) => {
+      const item = document.createElement('div');
+      item.className = 'autocomplete-item';
+      item.innerHTML = `<span class="item-icon">✦</span><span>${highlightMatch(g.name, query)}</span>`;
+      item.addEventListener('mousedown', (e) => {
+        e.preventDefault(); // evita que el input pierda foco antes de tiempo
+        selectGuest(g.name);
+      });
+      dropdown.appendChild(item);
+    });
+
+    dropdown.classList.add('open');
+  }
+
+  function closeDropdown() {
+    dropdown.classList.remove('open');
+    activeIndex = -1;
+  }
+
+  function selectGuest(name) {
+    guestInput.value = name;
+    closeDropdown();
+    guestInput.focus();
+  }
+
+  function updateActiveItem() {
+    const items = dropdown.querySelectorAll('.autocomplete-item');
+    items.forEach((el, i) => el.classList.toggle('active', i === activeIndex));
+  }
+
+  guestInput.addEventListener('input', () => {
+    if (adminMode) { closeDropdown(); return; }
+
+    const query = guestInput.value.trim();
+    if (!query) { closeDropdown(); return; }
+
+    const matches = guests.filter(g =>
+      g.name.toLowerCase().includes(query.toLowerCase())
+    ).slice(0, 8); // máximo 8 sugerencias
+
+    openDropdown(matches, query);
+  });
+
+  guestInput.addEventListener('keydown', (e) => {
+    const items = dropdown.querySelectorAll('.autocomplete-item');
+    if (!dropdown.classList.contains('open') || items.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeIndex = Math.min(activeIndex + 1, items.length - 1);
+      updateActiveItem();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIndex = Math.max(activeIndex - 1, 0);
+      updateActiveItem();
+    } else if (e.key === 'Enter' && activeIndex >= 0) {
+      e.preventDefault();
+      if (dropdownItems[activeIndex]) {
+        selectGuest(dropdownItems[activeIndex].name);
+        return; // no lanzar login todavía, solo seleccionar
+      }
+    } else if (e.key === 'Escape') {
+      closeDropdown();
+    }
+  });
+
+  // Cerrar dropdown al hacer clic fuera
+  document.addEventListener('click', (e) => {
+    if (!wrapper.contains(e.target)) closeDropdown();
+  });
+
+  // ══════════════════════
   // LOGIN LOGIC
   // ══════════════════════
-  const guestInput  = document.getElementById('guest-input');
   const passInput   = document.getElementById('pass-input');
   const passwordRow = document.getElementById('password-row');
   const loginError  = document.getElementById('login-error');
@@ -879,13 +1056,23 @@
     notFoundMsg.style.display = 'none';
     guestInput.value = '';
     passInput.value  = '';
+    closeDropdown();
   });
 
   document.getElementById('enter-btn').addEventListener('click', handleLogin);
-  guestInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+
+  // Enter en el campo de nombre solo lanza login si no hay item activo en el dropdown
+  guestInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      if (dropdown.classList.contains('open') && activeIndex >= 0) return; // ya manejado arriba
+      closeDropdown();
+      handleLogin();
+    }
+  });
   passInput.addEventListener('keydown',  e => { if (e.key === 'Enter') handleLogin(); });
 
   async function handleLogin() {
+    closeDropdown();
     loginError.style.display  = 'none';
     notFoundMsg.style.display = 'none';
     const name = guestInput.value.trim();
@@ -949,6 +1136,7 @@
     passwordRow.classList.remove('visible');
     guestInput.placeholder = 'Escribe tu nombre completo';
     toggleBtn.textContent  = '¿Eres novio/a? Ingresa aquí';
+    closeDropdown();
   }
 
   document.getElementById('logout-page-btn').addEventListener('click', goToLogin);
